@@ -4,6 +4,7 @@ import { createServer as createViteServer } from "vite";
 import { GoogleGenAI, Type } from "@google/genai";
 import dotenv from "dotenv";
 import fs from "fs";
+import { createClient } from "@supabase/supabase-js";
 
 dotenv.config();
 
@@ -314,10 +315,65 @@ ${JSON.stringify(currentState, null, 2)}
 // JSON File DB Database Paths
 const CONTENT_DB_FILE = path.join(process.cwd(), "content_db.json");
 const ORDERS_DB_FILE = path.join(process.cwd(), "orders_db.json");
+const SUPABASE_CONFIG_FILE = path.join(process.cwd(), "src", "supabase_config.json");
+
+// Intelligently instantiate a server-side Supabase client for cloud persistent sync
+function getSupabaseClient() {
+  let supabaseUrl = process.env.VITE_SUPABASE_URL || "";
+  let supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY || "";
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    if (fs.existsSync(SUPABASE_CONFIG_FILE)) {
+      try {
+        const config = JSON.parse(fs.readFileSync(SUPABASE_CONFIG_FILE, "utf-8"));
+        supabaseUrl = supabaseUrl || config.VITE_SUPABASE_URL || "";
+        supabaseAnonKey = supabaseAnonKey || config.VITE_SUPABASE_ANON_KEY || "";
+      } catch (e) {
+        console.warn("Failed to parse src/supabase_config.json server-side:", e);
+      }
+    }
+  }
+
+  supabaseUrl = supabaseUrl.trim();
+  supabaseAnonKey = supabaseAnonKey.trim();
+
+  if (supabaseUrl && supabaseAnonKey && supabaseUrl !== "YOUR_SUPABASE_URL_HERE" && supabaseUrl.length > 0) {
+    return createClient(supabaseUrl, supabaseAnonKey, {
+      auth: { persistSession: false }
+    });
+  }
+  return null;
+}
 
 // API to get content config from sever JSON file
-app.get("/api/content", (req, res) => {
+app.get("/api/content", async (req, res) => {
   try {
+    const dbClient = getSupabaseClient();
+    if (dbClient) {
+      const { data: dbData, error } = await dbClient
+        .from("avexon_content")
+        .select("*");
+
+      if (!error && dbData && dbData.length > 0) {
+        const dbMap: Record<string, any> = {};
+        dbData.forEach((row: any) => {
+          // Ignore the orders row for the regular content endpoint to keep it clean
+          if (row.key !== "orders") {
+            dbMap[row.key] = row.value;
+          }
+        });
+
+        // Sync with local file storage backup
+        try {
+          fs.writeFileSync(CONTENT_DB_FILE, JSON.stringify(dbMap, null, 2), "utf-8");
+        } catch (fsErr) {
+          console.warn("Could not save backup copy of content data to filesystem:", fsErr);
+        }
+
+        return res.json({ success: true, data: dbMap });
+      }
+    }
+
     if (fs.existsSync(CONTENT_DB_FILE)) {
       const fileData = fs.readFileSync(CONTENT_DB_FILE, "utf-8");
       res.json({ success: true, data: JSON.parse(fileData) });
@@ -331,19 +387,30 @@ app.get("/api/content", (req, res) => {
 });
 
 // API to save content config to server JSON file
-app.post("/api/content", (req, res) => {
+app.post("/api/content", async (req, res) => {
   try {
     const updatedContent = req.body;
     fs.writeFileSync(CONTENT_DB_FILE, JSON.stringify(updatedContent, null, 2), "utf-8");
+
+    // Push to Supabase if configured for cloud fallback
+    const dbClient = getSupabaseClient();
+    if (dbClient && typeof updatedContent === "object" && updatedContent !== null) {
+      const upsertPromises = Object.entries(updatedContent).map(([key, value]) => {
+        // Skip orders payload in generic content updater
+        if (key !== "orders") {
+          return dbClient.from("avexon_content").upsert({ key, value });
+        }
+        return Promise.resolve();
+      });
+      await Promise.all(upsertPromises);
+    }
+
     res.json({ success: true, message: "Content updated successfully on the server!" });
   } catch (err: any) {
     console.error("Error writing content database:", err);
     res.status(500).json({ success: false, error: err.message });
   }
 });
-
-// Path to write manual Supabase configs in development and bundle time
-const SUPABASE_CONFIG_FILE = path.join(process.cwd(), "src", "supabase_config.json");
 
 // API to save manual Supabase credentials to src/supabase_config.json
 app.post("/api/supabase-config", (req, res) => {
@@ -362,8 +429,27 @@ app.post("/api/supabase-config", (req, res) => {
 });
 
 // API to get all customer orders
-app.get("/api/orders", (req, res) => {
+app.get("/api/orders", async (req, res) => {
   try {
+    const dbClient = getSupabaseClient();
+    if (dbClient) {
+      const { data, error } = await dbClient
+        .from("avexon_content")
+        .select("value")
+        .eq("key", "orders")
+        .single();
+
+      if (!error && data && Array.isArray(data.value)) {
+        // Sync with local file storage backup
+        try {
+          fs.writeFileSync(ORDERS_DB_FILE, JSON.stringify(data.value, null, 2), "utf-8");
+        } catch (fsErr) {
+          console.warn("Could not save backup copy of orders data to filesystem:", fsErr);
+        }
+        return res.json({ success: true, data: data.value });
+      }
+    }
+
     if (fs.existsSync(ORDERS_DB_FILE)) {
       const fileData = fs.readFileSync(ORDERS_DB_FILE, "utf-8");
       res.json({ success: true, data: JSON.parse(fileData) });
@@ -377,12 +463,27 @@ app.get("/api/orders", (req, res) => {
 });
 
 // API to add or update an order in server JSON file
-app.post("/api/orders", (req, res) => {
+app.post("/api/orders", async (req, res) => {
   try {
     const incomingOrder = req.body;
     let ordersList = [];
+    let parsedFromCloud = false;
 
-    if (fs.existsSync(ORDERS_DB_FILE)) {
+    const dbClient = getSupabaseClient();
+    if (dbClient) {
+      const { data, error } = await dbClient
+        .from("avexon_content")
+        .select("value")
+        .eq("key", "orders")
+        .single();
+      
+      if (!error && data && Array.isArray(data.value)) {
+        ordersList = data.value;
+        parsedFromCloud = true;
+      }
+    }
+
+    if (!parsedFromCloud && fs.existsSync(ORDERS_DB_FILE)) {
       const fileData = fs.readFileSync(ORDERS_DB_FILE, "utf-8");
       try {
         ordersList = JSON.parse(fileData);
@@ -398,7 +499,18 @@ app.post("/api/orders", (req, res) => {
       ordersList.push(incomingOrder);
     }
 
+    // Write copy locally to disk
     fs.writeFileSync(ORDERS_DB_FILE, JSON.stringify(ordersList, null, 2), "utf-8");
+
+    // Write copy securely to cloud Supabase
+    if (dbClient) {
+      try {
+        await dbClient.from("avexon_content").upsert({ key: "orders", value: ordersList });
+      } catch (dbErr) {
+        console.error("Error persisting orders to server-side Supabase:", dbErr);
+      }
+    }
+
     res.json({ success: true, data: ordersList });
   } catch (err: any) {
     console.error("Error writing orders database:", err);
@@ -407,12 +519,27 @@ app.post("/api/orders", (req, res) => {
 });
 
 // API to delete an order from server JSON file
-app.delete("/api/orders/:id", (req, res) => {
+app.delete("/api/orders/:id", async (req, res) => {
   try {
     const orderId = req.params.id;
     let ordersList = [];
+    let parsedFromCloud = false;
 
-    if (fs.existsSync(ORDERS_DB_FILE)) {
+    const dbClient = getSupabaseClient();
+    if (dbClient) {
+      const { data, error } = await dbClient
+        .from("avexon_content")
+        .select("value")
+        .eq("key", "orders")
+        .single();
+      
+      if (!error && data && Array.isArray(data.value)) {
+        ordersList = data.value;
+        parsedFromCloud = true;
+      }
+    }
+
+    if (!parsedFromCloud && fs.existsSync(ORDERS_DB_FILE)) {
       const fileData = fs.readFileSync(ORDERS_DB_FILE, "utf-8");
       try {
         ordersList = JSON.parse(fileData);
@@ -423,6 +550,16 @@ app.delete("/api/orders/:id", (req, res) => {
 
     ordersList = ordersList.filter((o: any) => o.id !== orderId);
     fs.writeFileSync(ORDERS_DB_FILE, JSON.stringify(ordersList, null, 2), "utf-8");
+
+    // Write copy securely to cloud Supabase
+    if (dbClient) {
+      try {
+        await dbClient.from("avexon_content").upsert({ key: "orders", value: ordersList });
+      } catch (dbErr) {
+        console.error("Error persisting deleted orders state to server-side Supabase:", dbErr);
+      }
+    }
+
     res.json({ success: true, data: ordersList });
   } catch (err: any) {
     console.error("Error deleting order:", err);
