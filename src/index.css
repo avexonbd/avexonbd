@@ -440,6 +440,16 @@ body.modal-open #floating-navigation-system {
   border-radius: 0.75rem; /* rounded-xl */
   box-shadow: 0 0 15px rgba(168, 85, 247, 0.35);
   transition: all 0.3s ease;
+  animation: logo-float 4s ease-in-out infinite;
+}
+
+@keyframes logo-float {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-3.5px) rotate(1deg); /* subtle floating wiggle for the logo badge */
+  }
 }
 
 .logo-neon-card::before {
@@ -452,13 +462,13 @@ body.modal-open #floating-navigation-system {
   transform: translate(-50%, -50%);
   background: conic-gradient(
     from 150deg,
-    #a855f7 0%,
-    #7c3aed 25%,
-    #c084fc 50%,
-    #8b5cf6 75%,
-    #a855f7 100%
+    transparent 15%,
+    #a855f7 35%,
+    #d8b4fe 50%,
+    #8b5cf6 65%,
+    transparent 85%
   );
-  animation: neon-border-spin 3.5s linear infinite;
+  animation: neon-border-spin 2.5s linear infinite;
   z-index: 0;
   pointer-events: none;
 }
@@ -470,8 +480,12 @@ body.modal-open #floating-navigation-system {
   border-radius: calc(0.75rem - 2px);
   width: 100%;
   height: 100%;
-  box-shadow: inset 0 0 10px rgba(168, 85, 247, 0.8), inset 0 0 4px rgba(236, 72, 153, 0.45);
+  box-shadow: inset 0 0 12px rgba(168, 85, 247, 0.95), inset 0 0 5px rgba(236, 72, 153, 0.6);
   transition: all 0.3s ease;
+}
+
+.logo-neon-inner:hover {
+  box-shadow: inset 0 0 18px rgba(168, 85, 247, 1), inset 0 0 9px rgba(236, 72, 153, 0.8);
 }
 
 /* Print CSS Media query to support elegant monochrome ink-safe invoice download/printing */
