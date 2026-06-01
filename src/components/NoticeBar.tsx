@@ -51,7 +51,7 @@ export default function NoticeBar() {
       <div className="absolute inset-0 bg-radial-gradient from-purple-500/5 to-transparent pointer-events-none" />
 
       {/* Static Announcement Badge (Stays fixed on left to anchor the context) */}
-      <div className="absolute left-0 top-0 bottom-0 px-3 bg-[#0d041c] border-r border-purple-500/20 flex items-center gap-1.5 z-10 shadow-[4px_0_15px_rgba(0,0,0,0.6)]">
+      <div className="absolute left-0 top-0 bottom-0 px-3 bg-[#0d041c] border-r border-purple-500/10 flex items-center gap-1.5 z-10">
         <Megaphone className="w-3.5 h-3.5 text-purple-400 animate-bounce" style={{ animationDuration: '3s' }} />
         <span className="text-[11px] font-bold text-purple-300 uppercase tracking-widest whitespace-nowrap font-sans">
           ঘোষণা
