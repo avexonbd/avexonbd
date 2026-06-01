@@ -136,7 +136,7 @@ export default function Testimonials() {
                   filteredReviews.map((rev, itemIdx) => (
                     <div
                       key={`l1-${rev.id}-${repeatIdx}-${itemIdx}`}
-                      className="review-capsule-card max-w-sm sm:max-w-md md:max-w-lg shrink-0 select-none"
+                      className="review-capsule-card max-w-sm sm:max-w-md md:max-w-lg shrink-0 select-none cursor-pointer"
                       title={rev.text}
                     >
                       <div className="review-capsule-inner flex items-center gap-4">
@@ -158,7 +158,7 @@ export default function Testimonials() {
                               ))}
                             </div>
                           </div>
-                          <p className="text-slate-350 text-[11px] sm:text-xs truncate max-w-[170px] sm:max-w-[240px] md:max-w-[320px] font-medium leading-relaxed italic">
+                          <p className="text-slate-355 text-[11px] sm:text-xs truncate max-w-[170px] sm:max-w-[240px] md:max-w-[320px] font-medium leading-relaxed italic">
                             "{rev.text}"
                           </p>
                         </div>
@@ -169,7 +169,7 @@ export default function Testimonials() {
               </div>
             </div>
           ) : (
-            <div className="text-center py-12 max-w-xs mx-auto bg-[#0B1521] border border-slate-800 rounded-2xl">
+            <div className="text-center py-12 max-w-xs mx-auto bg-[#0d041b] border border-purple-500/10 rounded-2xl shadow-xl">
               <p className="text-slate-400 text-sm">কোনো মতামত খুঁজে পাওয়া যায়নি।</p>
             </div>
           )}
@@ -182,7 +182,7 @@ export default function Testimonials() {
                   [...filteredReviews].reverse().map((rev, itemIdx) => (
                     <div
                       key={`l2-${rev.id}-${repeatIdx}-${itemIdx}`}
-                      className="review-capsule-card max-w-sm sm:max-w-md md:max-w-lg shrink-0 select-none"
+                      className="review-capsule-card max-w-sm sm:max-w-md md:max-w-lg shrink-0 select-none cursor-pointer"
                       title={rev.text}
                     >
                       <div className="review-capsule-inner flex items-center gap-4">
@@ -203,7 +203,7 @@ export default function Testimonials() {
                               ))}
                             </div>
                           </div>
-                          <p className="text-slate-350 text-[11px] sm:text-xs truncate max-w-[170px] sm:max-w-[240px] md:max-w-[320px] font-medium leading-relaxed italic">
+                          <p className="text-slate-355 text-[11px] sm:text-xs truncate max-w-[170px] sm:max-w-[240px] md:max-w-[320px] font-medium leading-relaxed italic">
                             "{rev.text}"
                           </p>
                         </div>
@@ -214,7 +214,6 @@ export default function Testimonials() {
               </div>
             </div>
           )}
-
         </div>
 
       </div>

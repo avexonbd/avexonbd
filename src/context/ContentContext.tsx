@@ -508,6 +508,63 @@ export function ContentProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
+  // Live synchronization: reload the data when storage changes, window focus is received, or via periodic 2-second polling
+  useEffect(() => {
+    const refreshContentSilently = async () => {
+      try {
+        const response = await fetch("/api/content");
+        const resJson = await response.json();
+        if (resJson.success && resJson.data) {
+          const d = resJson.data;
+          
+          // Only update if something is different (shallow/deep check omitted, standard React comparison is safe)
+          if (d.hero) setHeroConfig(d.hero);
+          if (d.owner) setOwner(d.owner);
+          if (d.services) setServices(d.services);
+          if (d.websites) setWebsites(d.websites);
+          if (d.portfolio) setPortfolio(d.portfolio);
+          if (d.testimonials) setTestimonials(d.testimonials);
+          if (d.team) setTeam(d.team);
+          if (d.logoUrl) setLogoUrl(d.logoUrl);
+          if (d.headerBranding) setHeaderBranding(d.headerBranding);
+          if (d.noticeConfig) setNoticeConfig(d.noticeConfig);
+          if (d.offerConfig) setOfferConfig(d.offerConfig);
+          if (d.contactConfig) setContactConfig(d.contactConfig);
+          if (d.sectionHeadings) setSectionHeadings(d.sectionHeadings);
+          if (d.customPackagePlans) setCustomPackagePlans(d.customPackagePlans);
+          if (d.whyChooseUsStats) setWhyChooseUsStats(d.whyChooseUsStats);
+          if (d.whyChooseUsItems) setWhyChooseUsItems(d.whyChooseUsItems);
+        }
+      } catch (e) {
+        // Silent catch for stable client flow
+      }
+    };
+
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "avexon_content_last_updated" || e.key?.startsWith("avx_c_")) {
+        refreshContentSilently();
+      }
+    };
+
+    const handleFocus = () => {
+      refreshContentSilently();
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    window.addEventListener("focus", handleFocus);
+
+    // Also poll every 2 seconds for active instant preview updates
+    const pollInterval = setInterval(() => {
+      refreshContentSilently();
+    }, 2000);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("focus", handleFocus);
+      clearInterval(pollInterval);
+    };
+  }, []);
+
   // Save changes to the server backend JSON database
   const saveStateToServer = async (updates: {
     hero?: HeroConfig;
@@ -553,6 +610,9 @@ export function ContentProvider({ children }: { children: React.ReactNode }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       });
+
+      // Synchronously emit live signal timestamp in localStorage for cross-tab preview
+      localStorage.setItem("avexon_content_last_updated", Date.now().toString());
 
       // Synchronously write each updated key to Supabase so socket server broadcasts to other listeners instantly
       if (isSupabaseConfigured && supabase) {

@@ -1587,7 +1587,7 @@ export default function AdminPanel({ isOpen, onClose, isStandalonePWA = false }:
       title: "কোর ডাটা ও কন্ট্রোল",
       items: [
         { id: "ai_assistant" as ActiveTab, label: "স্মার্ট এআই রাইটার", icon: Wand2, color: "text-fuchsia-400" },
-        { id: "orders" as ActiveTab, label: "অর্ডার ট্র্যাকিং", icon: TrendingUp, color: "text-sky-400" },
+        { id: "orders" as ActiveTab, label: "Order List (অর্ডার লিস্ট)", icon: TrendingUp, color: "text-sky-400" },
         { id: "supabase" as ActiveTab, label: "সুপাবেস রিয়েল-টাইম", icon: Database, color: "text-emerald-400" }
       ]
     },
@@ -3856,12 +3856,18 @@ export default function AdminPanel({ isOpen, onClose, isStandalonePWA = false }:
 
                 {/* 7. ORDERS & TRACKING TAB */}
                 {activeTab === "orders" && (
-                  <div className="space-y-5">
-                    <div className="flex items-center justify-between gap-4 mb-4">
+                  <div className="space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-purple-500/10 mb-4">
                       <div>
-                        <h3 className="text-sm font-bold text-purple-400">রিয়েল-টাইম ক্লায়েন্ট অর্ডার ডাটাবেস</h3>
-                        <p className="text-[10px] text-slate-400">
-                          গ্রাহকেরা ই-কমার্স মডিউল বা চেকআউট ফরম পূরণ করলে এখানে অর্ডার জমা হবে। অর্ডার স্ট্যাটাস এবং ট্র্যাকিং রেজাল্ট সরাসরি আপডেট করুন।
+                        <h3 className="text-base font-black bg-gradient-to-r from-purple-400 via-pink-400 to-sky-400 bg-clip-text text-transparent font-logo uppercase tracking-tight flex items-center gap-2.5">
+                          <span>Order List (অর্ডার লিস্ট)</span>
+                          <span className="flex items-center gap-1 bg-[#10b981]/15 text-[#10b981] border border-[#10b981]/35 px-2 py-0.5 rounded-full text-[9px] font-mono tracking-widest normal-case font-bold animate-pulse">
+                            <span className="w-1.5 h-1.5 bg-[#10b981] rounded-full animate-ping" />
+                            <span>LIVE SYNC ACTIVE</span>
+                          </span>
+                        </h3>
+                        <p className="text-[10.5px] text-slate-300 font-sans mt-1">
+                          গ্রাহকরা ই-কমার্স মডিউল বা কাস্টম প্যাকেজ অর্ডার করার সাথে সাথে তা কোনো রিলোড ছাড়াই এখানে রিয়েল-টাইমে যুক্ত হবে।
                         </p>
                       </div>
                     </div>
@@ -5562,7 +5568,7 @@ create policy "Allow all actions" on public.avexon_content for all using (true) 
                         { id: "services", label: "সেবাসমূহ 🛠️", icon: Sparkles },
                         { id: "portfolio", label: "পোর্টফোলিও 💼", icon: Briefcase },
                         { id: "testimonials", label: "রিভিউস 💬", icon: MessageSquare },
-                        { id: "orders", label: "অর্ডার ডাটাবেজ 📈", icon: TrendingUp },
+                        { id: "orders", label: "অর্ডার লিস্ট (Order List) 📈", icon: TrendingUp },
                         { id: "team", label: "টিম মেম্বার্স 👥", icon: Users },
                         { id: "package_planner", label: "প্যাকেজ রেডি করুন 📊", icon: Zap },
                         { id: "why_choose_us", label: "কেন এভেক্সন ❓", icon: Award },

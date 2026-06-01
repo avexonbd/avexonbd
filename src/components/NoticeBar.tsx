@@ -45,8 +45,7 @@ export default function NoticeBar() {
 
   return (
     <div 
-      className="relative w-full bg-[#0A0512] border-b border-purple-500/10 overflow-hidden select-none z-40 h-[38px] flex items-center"
-      style={{ contentVisibility: 'auto' }}
+      className="relative w-full bg-[#0A0512] overflow-hidden select-none z-40 h-[38px] flex items-center"
     >
       {/* Decorative ambient subtle background glow behind notices */}
       <div className="absolute inset-0 bg-radial-gradient from-purple-500/5 to-transparent pointer-events-none" />

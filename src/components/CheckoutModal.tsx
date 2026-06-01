@@ -194,38 +194,12 @@ export default function CheckoutModal({ isOpen, onClose, preselectedWebsiteTitle
   // Tab-specific modes and status inquiry
   const [modalMode, setModalMode] = useState<'checkout' | 'tracking'>(initialMode || 'checkout');
 
-  const [searchOrderId, setSearchOrderId] = useState<string>(() => {
-    if (initialMode === 'tracking') {
-      try {
-        const stored = localStorage.getItem("avexon_user_orders");
-        if (stored) {
-          const parsed = JSON.parse(stored) as Order[];
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            return parsed[0].id;
-          }
-        }
-      } catch (e) {}
-    }
-    return "";
-  });
+  const [searchOrderId, setSearchOrderId] = useState<string>("");
 
   const [searchError, setSearchError] = useState<string>("");
   const [filterQuery, setFilterQuery] = useState<string>("");
 
-  const [searchedOrder, setSearchedOrder] = useState<Order | null>(() => {
-    if (initialMode === 'tracking') {
-      try {
-        const stored = localStorage.getItem("avexon_user_orders");
-        if (stored) {
-          const parsed = JSON.parse(stored) as Order[];
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            return parsed[0];
-          }
-        }
-      } catch (e) {}
-    }
-    return null;
-  });
+  const [searchedOrder, setSearchedOrder] = useState<Order | null>(null);
 
   const [searchedOrdersList, setSearchedOrdersList] = useState<Order[]>([]);
 

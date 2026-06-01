@@ -100,7 +100,7 @@ export default function App() {
         <div className="absolute -top-[40%] -left-[20%] w-[80%] h-[80%] rounded-full bg-purple-900/10 blur-[120px] pointer-events-none" />
         <div className="absolute -bottom-[40%] -right-[20%] w-[80%] h-[80%] rounded-full bg-pink-900/10 blur-[120px] pointer-events-none" />
 
-        <div className="relative flex flex-col items-center z-10">
+        <div className="relative flex flex-col items-center justify-center z-10 animate-fade-in">
           {/* Pulsing neon orb ring around logo */}
           <div className="relative w-36 h-36 flex items-center justify-center">
             <div className="absolute inset-0 rounded-full border border-purple-500/30 animate-ping duration-1000 opacity-25" />
@@ -121,14 +121,6 @@ export default function App() {
               </div>
             )}
           </div>
-
-          {/* Brand title */}
-          <h2 
-            className="mt-8 text-2xl font-bold font-logo tracking-tight text-white animate-pulse"
-            style={{ fontFamily: headerBranding?.customFontUrl ? "CustomUploadedFont" : (headerBranding?.fontFamily || undefined) }}
-          >
-            {headerBranding?.loaderText || headerBranding?.brandName || "Avexon"}
-          </h2>
         </div>
       </div>
     );

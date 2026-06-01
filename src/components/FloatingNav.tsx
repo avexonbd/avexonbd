@@ -81,7 +81,7 @@ export default function FloatingNav({ activeSection, onNavigate }: FloatingNavPr
   };
 
   return (
-    <div id="floating-navigation-system" className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3 pointer-events-none">
+    <div id="floating-navigation-system" className="fixed bottom-6 right-6 lg:bottom-10 lg:right-10 z-50 flex flex-col items-end gap-3 lg:gap-4 pointer-events-none">
       
       {/* 2. Main Expanded Navigation Hub */}
       <AnimatePresence>
@@ -215,7 +215,7 @@ export default function FloatingNav({ activeSection, onNavigate }: FloatingNavPr
           <motion.button
             id="btn-floating-nav-trigger"
             onClick={handleTriggerClick}
-            className="pointer-events-auto timer-neon-card timer-neon-card-hour w-14 h-14 rounded-xl shadow-2xl focus:outline-none cursor-pointer group active:scale-95"
+            className="pointer-events-auto timer-neon-card timer-neon-card-hour w-14 h-14 lg:w-20 lg:h-20 rounded-xl lg:rounded-2xl shadow-2xl focus:outline-none cursor-pointer group active:scale-95 shadow-[0_0_20px_rgba(168,85,247,0.35)]"
             whileHover={{ scale: 1.08 }}
           >
             {/* Inner mask styled button matches the timer shape */}
@@ -229,7 +229,7 @@ export default function FloatingNav({ activeSection, onNavigate }: FloatingNavPr
                     exit={{ rotate: 90, opacity: 0 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <X className="w-6 h-6 text-purple-400" />
+                    <X className="w-6 h-6 lg:w-9 lg:h-9 text-fuchsia-400" />
                   </motion.div>
                 ) : (
                   <motion.div
@@ -238,9 +238,9 @@ export default function FloatingNav({ activeSection, onNavigate }: FloatingNavPr
                     animate={{ rotate: 0, opacity: 1 }}
                     exit={{ rotate: -90, opacity: 0 }}
                     transition={{ duration: 0.2 }}
-                    className="flex items-center justify-center"
+                    className="flex items-center justify-center pointer-events-none"
                   >
-                    <Compass className="w-6 h-6 text-purple-400 group-hover:text-purple-300 transition-colors duration-300" />
+                    <Compass className="w-6 h-6 lg:w-9 lg:h-9 text-purple-400 group-hover:text-purple-300 transition-colors duration-300 animate-pulse" />
                   </motion.div>
                 )}
               </AnimatePresence>
